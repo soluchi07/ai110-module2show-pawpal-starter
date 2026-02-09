@@ -1,4 +1,5 @@
 import streamlit as st
+from scheduler import Task, Pet, PetOwner, Scheduler
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -57,32 +58,91 @@ with col2:
 with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
+task_type = st.selectbox("Task type", ["walk", "feed", "groom", "play", "other"], key="task_type_select")
+task_notes = st.text_area("Notes (optional)", value="")
+
 if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
+    task = Task(
+        title=task_title,
+        task_type=task_type,
+        duration_minutes=int(duration),
+        priority=priority,
+        notes=task_notes
     )
+    if task.validate():
+        st.session_state.tasks.append(task)
+        st.success(f"Added task: {task.title}")
+    else:
+        st.error("Invalid task. Please check the inputs.")
 
 if st.session_state.tasks:
     st.write("Current tasks:")
-    st.table(st.session_state.tasks)
+    task_display_data = [
+        {
+            "Title": t.title,
+            "Type": t.task_type,
+            "Duration (min)": t.duration_minutes,
+            "Priority": t.priority,
+            "Notes": t.notes if t.notes else "—"
+        }
+        for t in st.session_state.tasks
+    ]
+    st.table(task_display_data)
 else:
     st.info("No tasks yet. Add one above.")
 
 st.divider()
 
 st.subheader("Build Schedule")
-st.caption("This button should call your scheduling logic once you implement it.")
+st.caption("Generate a daily plan for your pet based on your tasks and availability.")
 
 if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+    if not st.session_state.tasks:
+        st.error("No tasks added. Please add at least one task above.")
+    else:
+        # Create scheduler and populate it
+        scheduler = Scheduler()
+        
+        # Create and add pet
+        pet = Pet(name=pet_name, species=species)
+        scheduler.set_pet(pet)
+        
+        # Set owner and availability (default: 8am to 10pm = 480 to 1320 minutes)
+        owner = PetOwner(name=owner_name, availability=(480, 1320))
+        scheduler.set_owner(owner)
+        
+        # Add all tasks to scheduler
+        for task in st.session_state.tasks:
+            scheduler.add_task(task)
+        
+        # Generate plan
+        plan = scheduler.generate_plan()
+        
+        if plan:
+            st.success(f"Schedule generated for {pet_name}!")
+            st.markdown(f"**Plan for {pet_name} ({species})**")
+            st.markdown(f"Owner: {owner_name} | Available: 8:00 AM - 10:00 PM")
+            
+            # Display scheduled items
+            st.markdown("### Daily Schedule")
+            scheduled_items = [item for item in plan if item.scheduled_time >= 0]
+            unscheduled_items = [item for item in plan if item.scheduled_time < 0]
+            
+            if scheduled_items:
+                for item in scheduled_items:
+                    hours = item.scheduled_time // 60
+                    minutes = item.scheduled_time % 60
+                    time_str = f"{hours:02d}:{minutes:02d}"
+                    st.markdown(
+                        f"**{time_str}** - {item.task.title} ({item.duration_minutes}min) "
+                        f"[{item.task.priority} priority] — {item.reason}"
+                    )
+            else:
+                st.warning("No tasks could be scheduled within the available time window.")
+            
+            if unscheduled_items:
+                st.markdown("### Could Not Schedule")
+                for item in unscheduled_items:
+                    st.markdown(f"- {item.task.title} — {item.reason}")
+        else:
+            st.error("Could not generate a schedule. Check your inputs.")

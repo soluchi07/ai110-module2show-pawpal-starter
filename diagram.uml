@@ -1,0 +1,54 @@
+@startuml plan
+classDiagram
+    class Task {
+        -type: str
+        -title: str
+        -notes: str
+        -time_window: tuple~int, int~
+        -duration_minutes: int
+        -priority: str
+        +validate() bool
+        +get_details() dict
+    }
+
+    class Pet {
+        -name: str
+        -species: str
+        -needs: list~str~
+        -preferences: dict~str, str~
+        +add_preference(key: str, value: str)
+        +get_preferences() dict
+    }
+
+    class PetOwner {
+        -name: str
+        -availability: tuple~int, int~
+        -preferences: dict~str, str~
+        +add_preference(key: str, value: str)
+        +get_preferences() dict
+    }
+
+    class PlanItem {
+        -task: Task
+        -scheduled_time: int
+        -duration_minutes: int
+        +get_summary() str
+    }
+
+    class Scheduler {
+        -tasks: list~Task~
+        -pet: Pet
+        -owner: PetOwner
+        +add_task(task: Task)
+        +set_pet(pet: Pet)
+        +set_owner(owner: PetOwner)
+        +generate_plan() list~PlanItem~
+    }
+
+    PetOwner "1" -- "1" Pet : owns
+    Scheduler "1" -- "*" Task : manages
+    Scheduler "1" -- "1" Pet : uses
+    Scheduler "1" -- "1" PetOwner : uses
+    Scheduler "1" -- "*" PlanItem : produces
+
+@enduml

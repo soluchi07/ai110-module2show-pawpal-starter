@@ -4,8 +4,12 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+- Initial UML: a small set of core classes centered on scheduling flow: `Scheduler` orchestrates, `Task` represents a care activity, and `PetOwner`/`Pet` hold profile data used by the planner. I modeled the flow as: create task → enrich with pet/owner info → generate/display plan.
+- Classes and responsibilities:
+    - `Task`: store task details (type, time window, duration, priority).
+    - `Pet`: store pet info (species, needs, preferences).
+    - `PetOwner`: store owner info (availability, preferences).
+    - `Scheduler`: accept tasks, apply constraints/preferences from `Pet` and `PetOwner`, and produce a plan for display.
 
 **b. Design changes**
 
