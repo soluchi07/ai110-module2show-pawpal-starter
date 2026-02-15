@@ -13,8 +13,27 @@
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+Yes, several design changes were made during implementation to address bottlenecks and missing relationships:
+
+1. **Added Priority Enum**: Introduced a `Priority` enum class to enforce valid priority values ("low", "medium", "high") instead of accepting any string. This prevents runtime errors from typos and improves type safety.
+
+2. **Enhanced Task validation**: Expanded `Task.validate()` to check for empty titles, negative durations, invalid priorities, backwards time windows (end before start), and out-of-range times (outside 0-1440 minutes). This catches configuration errors early.
+
+3. **Added PetOwner → Pet relationship**: Added an optional `pet` field to `PetOwner` to represent the "owns" relationship shown in the UML. This makes the ownership explicit and allows for future features like accessing pet preferences through the owner.
+
+4. **Changed add_task() return type**: Modified `Scheduler.add_task()` from `None` to `bool` so callers can detect when a task fails validation instead of silently ignoring invalid tasks.
+
+5. **Added PlanItem.reason field**: Added a `reason: str` field to `PlanItem` to explain why each task was scheduled at its time (or why it couldn't be scheduled). This provides transparency in the scheduling decisions.
+
+6. **Added conflict detection logic**: Implemented `_check_time_overlap()` helper method and modified `generate_plan()` to detect and prevent overlapping task schedules. The scheduler now maintains a list of occupied time slots and finds non-conflicting windows.
+
+7. **Added task removal methods**: Added `remove_task()` and `clear_tasks()` methods to `Scheduler` because you could add tasks but never remove them, limiting flexibility during testing and updates.
+
+8. **Added validation in generate_plan()**: Changed `generate_plan()` to raise `ValueError` if pet or owner is not set, rather than silently returning an empty list. This gives clearer error messages when the scheduler is misconfigured.
+
+9. **Improved priority sorting**: Added `_get_priority_value()` helper to convert priority strings to numeric values for consistent sorting. Tasks are now sorted by priority first, then by duration (longer tasks scheduled first to maximize utilization).
+
+**Why these changes mattered**: The initial skeleton had methods that would fail silently or couldn't detect common errors. These changes make the system more robust, provide better feedback to users, and handle edge cases like scheduling conflicts that the original design overlooked.
 
 ---
 
