@@ -44,8 +44,21 @@ Yes, several design changes were made during implementation to address bottlenec
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+**Tradeoff: Greedy Scheduling vs. Global Optimization**
+
+The scheduler uses a **greedy approach** that schedules tasks one-by-one in priority order (highest priority first), placing each task at the earliest available time slot. This trades **global optimality** for **simplicity and speed**.
+
+**What we gain:**
+- Fast execution: O(n²) time complexity instead of exponential for exhaustive search
+- Simple, understandable logic that's easy to debug and maintain
+- Predictable behavior: high-priority tasks are always scheduled first
+- Real-time responsiveness: can generate a schedule in milliseconds
+
+**Why this tradeoff is reasonable for pet care:**
+1. **Urgency matters**: Pet care tasks often have real urgency (feeding a hungry pet, administering medication). A greedy priority-first approach ensures critical tasks never get bumped.
+2. **Human interpretability**: Pet owners need to understand *why* tasks were scheduled in a certain order. "High priority tasks go first" is intuitive; "optimal by complex scoring function" is not.
+3. **Dynamic schedules**: Pet owners frequently add/remove tasks throughout the day. A fast greedy algorithm allows instant rescheduling, while global optimization would be too slow for interactive use.
+4. **Good enough is better than perfect**: Getting an 80% optimal schedule in milliseconds is more valuable than waiting seconds for a 95% optimal schedule when caring for pets.
 
 ---
 

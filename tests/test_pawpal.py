@@ -3,32 +3,27 @@
 from pawpal_system import Pet, Task
 
 
-def test_task_completion() -> None:
-	"""Task completion updates the completed status."""
+def test_task_validation_and_details() -> None:
+	"""Task validation returns true for valid inputs."""
 	task = Task(
-		description="Check water",
-		start_time="09:00",
+		title="Check water",
+		task_type="other",
 		duration_minutes=5,
-		frequency="daily",
+		priority="medium",
+		time_window=(540, 600),
+		start_time="09:00",
 	)
 
-	assert task.completed is False
-	task.mark_complete()
-	assert task.completed is True
+	assert task.validate() is True
+	details = task.get_details()
+	assert details["title"] == "Check water"
+	assert details["start_time"] == 540
 
 
-def test_pet_task_addition_increases_count() -> None:
-	"""Adding a task to a pet increments its task count."""
+def test_pet_preferences() -> None:
+	"""Pets store and return preferences."""
 	pet = Pet(name="Mochi", species="dog")
-	task = Task(
-		description="Morning walk",
-		start_time="08:00",
-		duration_minutes=30,
-		frequency="daily",
-	)
+	pet.add_preference("favorite_time", "morning")
 
-	initial_count = len(pet.tasks)
-	added = pet.add_task(task)
-
-	assert added is True
-	assert len(pet.tasks) == initial_count + 1
+	preferences = pet.get_preferences()
+	assert preferences["favorite_time"] == "morning"

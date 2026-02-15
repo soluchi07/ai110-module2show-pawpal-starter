@@ -22,6 +22,37 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter Scheduling
+
+PawPal+ now includes advanced scheduling features:
+
+### Recurring Tasks
+- **Daily & Weekly Tasks**: Mark tasks with `frequency="daily"` or `frequency="weekly"`
+- **Auto-Regeneration**: When a recurring task is marked complete, a new instance is automatically created for the next occurrence
+- Perfect for routine care like feeding, walks, and medication
+
+### Task Management
+- **Sort by Time**: `sort_by_time()` method returns tasks in chronological order
+- **Smart Filtering**: `filter_tasks()` allows filtering by:
+  - Completion status (completed/incomplete)
+  - Pet name (for multi-pet households)
+- **Completion Tracking**: Built-in `completed` attribute on all tasks
+
+### Conflict Detection
+- **Lightweight Warnings**: `detect_scheduling_conflicts()` identifies overlapping tasks without crashing
+- **Optimized Algorithm**: 
+  - Sorts tasks by start time (O(n log n))
+  - Early exit optimization reduces unnecessary comparisons
+  - Returns human-readable warning messages with exact overlap duration
+- **Proactive Prevention**: Catches scheduling conflicts before they become problems
+
+### Performance Optimizations
+- Helper method `_tasks_overlap()` for cleaner, reusable overlap logic
+- Greedy scheduling algorithm balances speed with effectiveness
+- Gap-filling for flexible tasks maximizes schedule utilization
+
+All core scheduling methods now include comprehensive docstrings with algorithm explanations and complexity analysis.
+
 ## Getting started
 
 ### Setup

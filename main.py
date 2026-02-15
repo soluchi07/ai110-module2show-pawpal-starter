@@ -1,6 +1,6 @@
 """Demo script for PawPal+ core classes."""
 
-from pawpal_system import Owner, Pet, Task, Scheduler
+from pawpal_system import PetOwner, Pet, Task, Scheduler
 
 
 def _format_time(minutes: int) -> str:
@@ -9,53 +9,99 @@ def _format_time(minutes: int) -> str:
 
 
 def main() -> None:
-	owner = Owner(name="Jordan")
+	owner = PetOwner(name="Jordan", availability=(480, 1320))
 
-	pet_1 = Pet(name="Mochi", species="dog")
-	pet_2 = Pet(name="Luna", species="cat")
+	pet = Pet(name="Mochi", species="dog")
 
-	pet_1.add_task(
-		Task(
-			description="Morning walk",
-			start_time="08:00",
-			duration_minutes=30,
-			frequency="daily",
-		)
+	scheduler = Scheduler()
+	scheduler.set_pet(pet)
+	scheduler.set_owner(owner)
+
+	# Create some recurring tasks
+	task_morning_walk = Task(
+		title="Morning walk",
+		task_type="walk",
+		duration_minutes=30,
+		priority="high",
+		time_window=(480, 600),
+		start_time="08:00",
+		completed=False,
+		frequency="daily",
 	)
-	pet_1.add_task(
-		Task(
-			description="Breakfast",
-			start_time="08:30",
-			duration_minutes=15,
-			frequency="daily",
-		)
+	scheduler.add_task(task_morning_walk)
+
+	task_breakfast = Task(
+		title="Breakfast",
+		task_type="feed",
+		duration_minutes=15,
+		priority="high",
+		time_window=(510, 600),
+		start_time="08:30",
+		completed=False,
+		frequency="daily",
 	)
-	pet_2.add_task(
-		Task(
-			description="Play time",
-			start_time="15:00",
-			duration_minutes=20,
-			frequency="daily",
-		)
+	scheduler.add_task(task_breakfast)
+
+	# One-time task
+	task_play = Task(
+		title="Play time",
+		task_type="play",
+		duration_minutes=20,
+		priority="medium",
+		time_window=(900, 1020),
+		start_time="15:00",
+		completed=False,
+		frequency=None,
 	)
+	scheduler.add_task(task_play)
 
-	owner.add_pet(pet_1)
-	owner.add_pet(pet_2)
+	# Weekly task
+	task_grooming = Task(
+		title="Grooming session",
+		task_type="grooming",
+		duration_minutes=45,
+		priority="medium",
+		time_window=(1020, 1200),
+		start_time="17:00",
+		completed=False,
+		frequency="weekly",
+	)
+	scheduler.add_task(task_grooming)
 
-	scheduler = Scheduler(owner=owner)
-	plan = scheduler.build_daily_plan(include_completed=False)
+	# CONFLICTING TASK: Overlaps with breakfast (08:30-08:45)
+	# This task starts at 08:40 and runs 20 minutes, so it overlaps with breakfast
+	task_medication = Task(
+		title="Medication time",
+		task_type="medical",
+		duration_minutes=20,
+		priority="high",
+		time_window=(500, 700),
+		start_time="08:40",  # This overlaps with breakfast (08:30-08:45)
+		completed=False,
+		frequency=None,
+	)
+	scheduler.add_task(task_medication)
 
-	print("Today's Schedule")
-	print("----------------")
-	for pet, task in plan:
-		if task.start_time is None:
-			time_label = "Anytime"
-		else:
-			time_label = _format_time(task.start_time)
-		print(
-			f"{time_label} - {pet.name}: {task.description} "
-			f"({task.duration_minutes} min, {task.frequency})"
-		)
+	print("=" * 60)
+	print("INITIAL TASK LIST")
+	print("=" * 60)
+	print(f"Total tasks: {len(scheduler.tasks)}\n")
+	for i, task in enumerate(scheduler.tasks, 1):
+		freq_info = f" ({task.frequency})" if task.frequency else " (one-time)"
+		print(f"  {i}. {task}{freq_info}")
+
+	# Check for scheduling conflicts
+	print("\n" + "=" * 60)
+	print("CONFLICT DETECTION")
+	print("=" * 60)
+	conflicts = scheduler.detect_scheduling_conflicts()
+	
+	if conflicts:
+		print(f"\n{len(conflicts)} conflict(s) detected:\n")
+		for warning in conflicts:
+			print(f"  {warning}")
+	else:
+		print("\n✓ No scheduling conflicts detected!")
 
 
 if __name__ == "__main__":

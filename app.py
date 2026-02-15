@@ -1,6 +1,6 @@
 import streamlit as st
 
-from pawpal_scheduler import Task, Pet, PetOwner, Scheduler
+from pawpal_system import Task, Pet, PetOwner, Scheduler
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -48,8 +48,8 @@ species = st.selectbox("Species", ["dog", "cat", "other"])
 st.markdown("### Tasks")
 st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
 
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
+if "scheduler" not in st.session_state:
+    st.session_state.scheduler = Scheduler()
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -70,13 +70,12 @@ if st.button("Add task"):
         priority=priority,
         notes=task_notes
     )
-    if task.validate():
-        st.session_state.tasks.append(task)
+    if st.session_state.scheduler.add_task(task):
         st.success(f"Added task: {task.title}")
     else:
         st.error("Invalid task. Please check the inputs.")
 
-if st.session_state.tasks:
+if st.session_state.scheduler.tasks:
     st.write("Current tasks:")
     task_display_data = [
         {
@@ -86,7 +85,7 @@ if st.session_state.tasks:
             "Priority": t.priority,
             "Notes": t.notes if t.notes else "—"
         }
-        for t in st.session_state.tasks
+        for t in st.session_state.scheduler.tasks
     ]
     st.table(task_display_data)
 else:
@@ -98,23 +97,18 @@ st.subheader("Build Schedule")
 st.caption("Generate a daily plan for your pet based on your tasks and availability.")
 
 if st.button("Generate schedule"):
-    if not st.session_state.tasks:
+    if not st.session_state.scheduler.tasks:
         st.error("No tasks added. Please add at least one task above.")
     else:
-        # Create scheduler and populate it
-        scheduler = Scheduler()
-        
+        scheduler = st.session_state.scheduler
+
         # Create and add pet
         pet = Pet(name=pet_name, species=species)
         scheduler.set_pet(pet)
-        
+
         # Set owner and availability (default: 8am to 10pm = 480 to 1320 minutes)
         owner = PetOwner(name=owner_name, availability=(480, 1320))
         scheduler.set_owner(owner)
-        
-        # Add all tasks to scheduler
-        for task in st.session_state.tasks:
-            scheduler.add_task(task)
         
         # Generate plan
         plan = scheduler.generate_plan()
