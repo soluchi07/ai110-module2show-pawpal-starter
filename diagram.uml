@@ -1,4 +1,3 @@
-@startuml plan
 classDiagram
     class Task {
         -type: str
@@ -50,5 +49,3 @@ classDiagram
     Scheduler "1" -- "1" Pet : uses
     Scheduler "1" -- "1" PetOwner : uses
     Scheduler "1" -- "*" PlanItem : produces
-
-@enduml

@@ -22,6 +22,68 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Features
+
+PawPal+ implements several sophisticated algorithms to optimize pet care scheduling:
+
+### 1. Greedy Priority-Based Scheduling
+The core `generate_plan()` algorithm uses a greedy approach to build optimal daily schedules:
+- **Time Complexity**: O(n² log n) for n tasks
+- **Strategy**: Schedules high-priority rigid tasks first, then fills gaps with flexible tasks
+- **Considerations**: Owner availability, task time windows, dependencies, and pet species needs
+- **Process**: Sorts tasks by dynamic priority and duration, then attempts to schedule each in the best available time slot
+
+### 2. Dynamic Priority Calculation
+Tasks receive priority scores that adapt based on urgency:
+- **Base Priority**: High (3.0), Medium (2.0), Low (1.0)
+- **Urgency Boost**: Up to +1.0 when deadline is within 120 minutes
+- **Formula**: `priority_value + (1.0 - time_until_deadline / 120.0)`
+- **Time Complexity**: O(1)
+- Ensures critical deadlines are never missed by elevating priority as time runs out
+
+### 3. Dependency Management
+Enforces task ordering constraints (e.g., "Give medication" must follow "Feed pet"):
+- **Validation**: `_check_dependencies()` verifies all prerequisites are met before scheduling
+- **Time Complexity**: O(n) per check
+- Automatically defers tasks with unsatisfied dependencies
+
+### 4. Gap-Filling Algorithm
+Maximizes schedule efficiency by utilizing free time:
+- **Process**: Identifies gaps ≥15 minutes between rigid tasks
+- **Strategy**: Fits flexible tasks into available gaps within their time windows
+- **Time Complexity**: O(n log n + g·f) where g=gaps, f=flexible tasks
+- Ensures no wasted time while respecting task constraints
+
+### 5. Conflict Detection
+Identifies overlapping tasks with an optimized algorithm:
+- **Method**: `detect_scheduling_conflicts()` uses sorted comparison
+- **Time Complexity**: O(n log n) with early exit optimization
+- **Features**: 
+  - Sorts tasks by start time for efficient comparison
+  - Early termination when no more overlaps are possible
+  - Returns human-readable warnings with exact overlap duration
+- **Behavior**: Non-blocking warnings (never crashes the scheduler)
+
+### 6. Incremental Time Slot Search
+Finds optimal scheduling times with flexibility:
+- **Method**: `_find_best_time()` attempts earliest fit, then searches in 15-minute increments
+- **Search Depth**: Up to 120 minutes ahead
+- **Time Complexity**: O(k·s) where k=attempts (max 8), s=occupied slots
+- Balances preference for early scheduling with conflict avoidance
+
+### 7. Recurring Task Management
+Automates routine care with intelligent task regeneration:
+- **Frequencies**: Daily and weekly recurrence patterns
+- **Auto-Regeneration**: `mark_task_complete()` creates next occurrence when task is completed
+- **Time Complexity**: O(1) for task regeneration
+- Perfect for feeding schedules, walks, medication, and grooming
+
+### 8. Task Organization Utilities
+Provides flexible task management:
+- **Sorting**: `sort_by_time()` orders tasks chronologically (O(n log n))
+- **Filtering**: `filter_tasks()` by completion status and pet name
+- **Validation**: Built-in constraint checking on all tasks
+
 ## Smarter Scheduling
 
 PawPal+ now includes advanced scheduling features:
@@ -72,3 +134,6 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+### 📸 Demo
+<a href="/course_images/ai110/your_screenshot_name.png" target="_blank"><img src='/course_images/ai110/demo.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
